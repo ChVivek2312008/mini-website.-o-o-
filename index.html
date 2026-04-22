@@ -1,27 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ShopX</title>
-  <link rel="stylesheet" href="style.css">
+  <title>ShopX Pro</title>
+  <style>
+    body { font-family: Arial; margin: 0; background: #f1f3f6; }
+    header {
+      background: #2874f0;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    button {
+      background: #fb641b;
+      border: none;
+      padding: 8px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
 <header>
-  <h1>ShopX</h1>
-  <input type="text" id="search" placeholder="Search products...">
-  <div class="cart">🛒 <span id="cart-count">0</span></div>
+  <h2>ShopX Pro</h2>
+  <div>Cart: <span id="count">0</span></div>
 </header>
 
-<main>
-  <div class="filters">
-    <button onclick="filter('all')">All</button>
-    <button onclick="filter('fashion')">Fashion</button>
-    <button onclick="filter('electronics')">Electronics</button>
-  </div>
+<div class="grid" id="products"></div>
 
-  <div id="products" class="grid"></div>
-</main>
+<script>
+async function loadProducts() {
+  const res = await fetch("http://localhost:3000/products");
+  const data = await res.json();
 
-<script src="script.js"></script>
+  const container = document.getElementById("products");
+  container.innerHTML = "";
+
+  data.forEach(p => {
+    container.innerHTML += `
+      <div class="card">
+        <h3>${p.name}</h3>
+        <p>₹${p.price}</p>
+        <button onclick="addToCart(${p.id})">Add to Cart</button>
+      </div>
+    `;
+  });
+}
+
+async function addToCart(id) {
+  await fetch("http://localhost:3000/cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  });
+
+  updateCart();
+}
+
+async function updateCart() {
+  const res = await fetch("http://localhost:3000/cart");
+  const data = await res.json();
+  document.getElementById("count").innerText = data.length;
+}
+
+loadProducts();
+updateCart();
+</script>
+
 </body>
 </html>
